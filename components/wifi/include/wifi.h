@@ -4,25 +4,22 @@
 #include "freertos/event_groups.h"
 #include "freertos/FreeRTOS.h"
 
-class Wifi final {
-  enum class Status {
-    SUCCESS = BIT0,
-    FAIL    = BIT1,
-  };
+namespace Status {
+inline constexpr esp_err_t SUCCESS = BIT0;
+inline constexpr esp_err_t FAIL    = BIT1;
+} // namespace Status
 
+class Wifi final {
   static constexpr std::string_view  LOG_TAG{ "Wifi handler" };
   static constexpr std::uint_fast8_t MAX_RETRIES{ 5 };
+  static constexpr std::string_view  SSID{ "ssid" };
+  static constexpr std::string_view  PASSWORD{ "password" };
+  static constexpr auto AUTH_MODE{ WIFI_AUTH_WPA2_PSK };
 
 private:
   std::uint_fast8_t  m_retries{ 0 };
   EventGroupHandle_t m_wifiEventGroup{};
-  wifi_config_t      m_wifiConfig{ .sta = {
-                                     .ssid     = "ssid",
-                                     .password = "password",
-                                     .threshold = { .authmode = WIFI_AUTH_WPA2_PSK },
-                                     .pmf_cfg = { .capable  = true,
-                                                  .required = false },
-                              } };
+  wifi_config_t      m_wifiConfig;
 
 public:
   Wifi() noexcept;
@@ -36,21 +33,21 @@ public:
 
 private:
   static void connectRegisterHandlers() noexcept;
-  void connectSetup() noexcept;
+  void        connectSetup() noexcept;
 
-  Status connectWaitForConnection() noexcept;
+  esp_err_t connectWaitForConnection() noexcept;
 
   static void wifiEventHandler(
     void*            arg,
     esp_event_base_t eventBase,
-    int32_t          eventId,
+    std::int32_t          eventId,
     void*            eventData) noexcept;
 
   static void ipEventHandler(
     void*            arg,
     esp_event_base_t eventBase,
-    int32_t          eventId,
+    std::int32_t          eventId,
     void*            eventData) noexcept;
 };
 
-//todo: tcp
+// todo: tcp

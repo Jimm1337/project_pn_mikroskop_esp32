@@ -3,7 +3,6 @@ ESP32 app for controlling the microscope and lightning
 
 ## Build guide:
  * Get esp-idf from GitHub
- * apply dos2unix to everything (really)
  * refer to the guides
 
 ## For CLion:
