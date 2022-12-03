@@ -50,7 +50,7 @@ inline constexpr esp_err_t FAIL    = BIT0;
   } while (false)
 
 #define PN_FAIL()                                                              \
-  do { return Status::FAIL } while (false)
+  do { return Status::FAIL; } while (false)
 
 #define PN_UNIMPLEMENTED() PN_FAIL()
 
