@@ -10,35 +10,32 @@ inline constexpr esp_err_t SUCCESS = ESP_OK;
 inline constexpr esp_err_t FAIL    = BIT0;
 } // namespace Status
 
-#if DEBUG == 1
-
-#include "pn_logger.h"
-
 #define PN_VALIDATE_TAG()                                                      \
   static_assert(                                                               \
     std::is_same_v<std::remove_cv_t<decltype(LOG_TAG)>, std::string_view>,     \
     "LOG_TAG must be a string_view")
 
+#if DEBUG == 1
+
+#include "pn_logger.h"
+
 #define PN_ERR_CHECK(err)                                                      \
-  PN_VALIDATE_TAG();                                                           \
   do {                                                                         \
     if ((err) != Status::SUCCESS) {                                            \
-      pn::log::error(LOG_TAG.data());                                          \
+      PN_LOG_ERROR("Error");                                                   \
       return Status::FAIL;                                                     \
     }                                                                          \
   } while (false)
 
 #define PN_FAIL()                                                              \
-  PN_VALIDATE_TAG();                                                           \
   do {                                                                         \
-    pn::log::error(LOG_TAG.data(), "Fail");                                    \
+    PN_LOG_ERROR("Fail");                                                      \
     return Status::FAIL;                                                       \
   } while (false)
 
 #define PN_UNIMPLEMENTED()                                                     \
-  PN_VALIDATE_TAG();                                                           \
   do {                                                                         \
-    pn::log::error(LOG_TAG.data(), "Unimplemented");                           \
+    PN_LOG_ERROR("Unimplemented");                                             \
     return Status::FAIL;                                                       \
   } while (false)
 

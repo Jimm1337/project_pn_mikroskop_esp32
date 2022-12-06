@@ -14,8 +14,7 @@ Command::Command(std::string_view rawCommand) noexcept:
     } else if (isLightCommand(rawCommand)) {
       return UnionCommands{ CommandLight{ rawCommand } };
     } else [[unlikely]] {
-      pn::log::invalidData(
-        LOG_TAG.data(), "Invalid command: %s", rawCommand.data());
+      PN_LOG_INVALID_DATA("Invalid command: %s", rawCommand.data());
       return UnionCommands{ CommandInvalid{} };
     }
   }() } {

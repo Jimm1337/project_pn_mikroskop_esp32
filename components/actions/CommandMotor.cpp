@@ -3,11 +3,8 @@
 #include "pn_macros.h"
 
 esp_err_t CommandMotor::execute() const noexcept {
-  pn::log::info(
-    LOG_TAG.data(),
-    "Motor command: %u, %d",
-    static_cast<std::uint_fast8_t>(m_axis),
-    m_steps);
+  PN_LOG_INFO(
+    "Motor command: %u, %d", static_cast<std::uint_fast8_t>(m_axis), m_steps);
 
   // todo: implement motor command execution
   PN_UNIMPLEMENTED();
@@ -22,8 +19,8 @@ Axis CommandMotor::parseAxis(std::string_view raw) noexcept {
   case 'z':
     return Axis::Z;
   [[unlikely]] default:
-    pn::log::invalidData(
-      LOG_TAG.data(), "Invalid axis specifier: %c", raw.at(AXIS_SPECIFIER_POS));
+    PN_LOG_INVALID_DATA(
+      "Invalid axis specifier: %c", raw.at(AXIS_SPECIFIER_POS));
     return Axis::INVALID;
   }
 }
@@ -36,10 +33,8 @@ CommandMotor::Steps CommandMotor::parseSteps(std::string_view raw) noexcept {
                .ec;
 
   if (err != std::errc{}) [[unlikely]] {
-    pn::log::invalidData(
-      LOG_TAG.data(),
-      "Invalid steps specifier: %s",
-      raw.data() + STEPS_SPECIFIER_POS);
+    PN_LOG_INVALID_DATA(
+      "Invalid steps specifier: %s", raw.data() + STEPS_SPECIFIER_POS);
   }
 
   return steps;

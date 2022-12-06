@@ -10,8 +10,7 @@ CommandLight::CommandLight(std::string_view raw) noexcept:
 }
 
 esp_err_t CommandLight::execute() const noexcept {
-  pn::log::info(
-    LOG_TAG.data(),
+  PN_LOG_INFO(
     "Light command: LED:%d, R:%d, G:%d, B:%d, A:%d",
     m_led,
     m_rgba.red,
@@ -34,10 +33,8 @@ CommandLight::LedNo CommandLight::parseLed(std::string_view raw) noexcept {
                .ec;
 
   [[unlikely]] if (err != std::errc{}) {
-    pn::log::invalidData(
-      LOG_TAG.data(),
-      "Invalid LED specifier: %s",
-      raw.data() + LED_SPECIFIER_POS);
+    PN_LOG_INVALID_DATA(
+      "Invalid LED specifier: %s", raw.data() + LED_SPECIFIER_POS);
   }
 
   return led;
@@ -54,10 +51,8 @@ ColorRGBA CommandLight::parseRGBA(std::string_view raw) noexcept {
                .ec;
 
   [[unlikely]] if (err != std::errc{}) {
-    pn::log::invalidData(
-      LOG_TAG.data(),
-      "Invalid RGBA specifier: %s",
-      raw.data() + RGBA_SPECIFIER_POS);
+    PN_LOG_INVALID_DATA(
+      "Invalid RGBA specifier: %s", raw.data() + RGBA_SPECIFIER_POS);
     return INVALID_COLOR;
   }
 
