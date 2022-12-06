@@ -19,6 +19,10 @@ class Command final {
 
   struct CommandInvalid {
     static esp_err_t execute() noexcept;
+
+  private:
+    uint32_t m_pad1;
+    uint32_t m_pad2;
   };
 
   using UnionCommands =
