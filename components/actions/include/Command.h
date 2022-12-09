@@ -15,14 +15,14 @@
  */
 class Command final {
   static constexpr std::string_view LOG_TAG{ "Command" };
-  static constexpr auto             COMMAND_SPECIFIER_LENGTH = 5;
 
-  struct CommandInvalid {
-    static esp_err_t execute() noexcept;
-
+  class CommandInvalid {
   private:
     uint32_t m_pad1;
     uint32_t m_pad2;
+
+  public:
+    static esp_err_t execute() noexcept;
   };
 
   using UnionCommands =
@@ -40,17 +40,36 @@ public:
 
   explicit Command(std::string_view rawCommand) noexcept;
 
+  consteval explicit Command() noexcept: m_command{ CommandInvalid{} } {
+  }
+
+  inline void registerCommand() noexcept {
+    //todo
+  }
+
   inline void execute() const noexcept {
     std::visit([](auto&& command) { command.execute(); }, m_command);
   }
 
+  [[nodiscard]] inline bool holdsMotorCommand() const noexcept {
+    return std::holds_alternative<CommandMotor>(m_command);
+  }
+
+  [[nodiscard]] inline bool holdsLightCommand() const noexcept {
+    return std::holds_alternative<CommandLight>(m_command);
+  }
+
+  [[nodiscard]] inline bool holdsInvalidCommand() const noexcept {
+    return std::holds_alternative<CommandInvalid>(m_command);
+  }
+
 private:
-  [[nodiscard]] static inline bool isMotorCommand(
+  [[nodiscard]] static inline bool isMotor(
     std::string_view rawCommand) noexcept {
     return std::tolower(rawCommand.at(0)) == 'm';
   }
 
-  [[nodiscard]] static inline bool isLightCommand(
+  [[nodiscard]] static inline bool isLight(
     std::string_view rawCommand) noexcept {
     return std::tolower(rawCommand.at(0)) == 'l';
   }

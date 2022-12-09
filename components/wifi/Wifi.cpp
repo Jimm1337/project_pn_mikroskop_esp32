@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
+#include "CommandQueue.h"
 
 /**
  * @brief Start the wifi task.
@@ -192,7 +193,7 @@ esp_err_t Wifi::tcpReceiveData(TcpSocket& sock) noexcept {
 
   while (true) {
     DataBuffer rxBuffer{};
-    TcpSize    len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
+    const TcpSize len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
 
     // Error occurred during receiving
     if (len < 0) [[unlikely]] {

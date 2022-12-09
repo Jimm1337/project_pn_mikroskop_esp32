@@ -9,9 +9,9 @@ esp_err_t Command::CommandInvalid::execute() noexcept {
 
 Command::Command(std::string_view rawCommand) noexcept:
   m_command{ [rawCommand] {
-    if (isMotorCommand(rawCommand)) {
+    if (isMotor(rawCommand)) {
       return UnionCommands{ CommandMotor{ rawCommand } };
-    } else if (isLightCommand(rawCommand)) {
+    } else if (isLight(rawCommand)) {
       return UnionCommands{ CommandLight{ rawCommand } };
     } else [[unlikely]] {
       PN_LOG_INVALID_DATA("Invalid command: %s", rawCommand.data());
