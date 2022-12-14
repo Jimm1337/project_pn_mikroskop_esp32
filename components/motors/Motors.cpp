@@ -1,17 +1,15 @@
 #include "Motors.h"
 
-template<typename C>
-  requires std::is_same_v<CommandMotor, std::remove_cvref_t<C>>
-void Motors::registerCommand(C&& command) noexcept {
-  switch (command.getAxis()) {
+void Motors::registerCommand(const CommandMotor* command) noexcept {
+  switch (command->getAxis()) {
   case Axis::X:
-    m_commandQueueX.push(std::forward<C>(command));
+    m_commandQueueX.push(command);
     break;
   case Axis::Y:
-    m_commandQueueY.push(std::forward<C>(command));
+    m_commandQueueY.push(command);
     break;
   case Axis::Z:
-    m_commandQueueZ.push(std::forward<C>(command));
+    m_commandQueueZ.push(command);
     break;
   default:
     break;
@@ -19,7 +17,30 @@ void Motors::registerCommand(C&& command) noexcept {
 }
 
 void Motors::startTasks() noexcept {
-  //todo
+  initMutex();
+  getInstance().initQueues();
+
+  xTaskCreate(
+    [](void* param) noexcept { getInstance().taskX(param); },
+    "MotorsX",
+    STACK_DEPTH,
+    nullptr,
+    1,
+    nullptr);
+  xTaskCreate(
+    [](void* param) noexcept { getInstance().taskY(param); },
+    "MotorsY",
+    STACK_DEPTH,
+    nullptr,
+    1,
+    nullptr);
+  xTaskCreate(
+    [](void* param) noexcept { getInstance().taskZ(param); },
+    "MotorsZ",
+    STACK_DEPTH,
+    nullptr,
+    1,
+    nullptr);
 }
 
 [[noreturn]] void Motors::taskX(void* /*pvParameters*/) noexcept {
@@ -60,4 +81,3 @@ void Motors::startTasks() noexcept {
     command.execute();
   }
 }
-

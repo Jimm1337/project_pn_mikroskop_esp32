@@ -215,4 +215,12 @@ inline void location(
     pn::internal::log::invalidData(LOG_TAG.data(), format, ##__VA_ARGS__);     \
   } while (false)
 
+#define PN_LOG_UNREACHABLE()                                                   \
+  do {                                                                         \
+    PN_VALIDATE_TAG();                                                         \
+    pn::internal::log::location(LOG_TAG.data());                               \
+    pn::internal::log::error(                                                  \
+      LOG_TAG.data(), LOG_FORMAT(E, "Unreachable code"));                      \
+  } while (false)
+
 #endif // PROJECT_PN_MIKROSKOP_ESP32_PN_LOGGER_H

@@ -1,4 +1,4 @@
-idf_component_register(SRCS "Lighting.cpp"
-                    INCLUDE_DIRS "include")
+idf_component_register(SRCS "Lighting.cpp" "CommandLight.cpp"
+                    INCLUDE_DIRS "include" REQUIRES commands)
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra -Wshadow -Wconversion -Werror)

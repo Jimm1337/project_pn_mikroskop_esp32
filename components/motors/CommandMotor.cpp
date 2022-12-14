@@ -1,6 +1,7 @@
 #include "CommandMotor.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
+#include "Motors.h"
 
 esp_err_t CommandMotor::execute() const noexcept {
   PN_LOG_INFO(
@@ -38,4 +39,8 @@ CommandMotor::Steps CommandMotor::parseSteps(std::string_view raw) noexcept {
   }
 
   return steps;
+}
+
+void CommandMotor::registerCommand() const noexcept {
+  Motors::getInstance().registerCommand(this);
 }

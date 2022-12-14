@@ -1,13 +1,9 @@
-#include "include/CommandLight.h"
+#include "CommandLight.h"
 #include <charconv>
 #include "esp_log.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
-
-CommandLight::CommandLight(std::string_view raw) noexcept:
-  m_led{ parseLed(raw) },
-  m_rgba{ parseRGBA(raw) } {
-}
+#include "Lighting.h"
 
 esp_err_t CommandLight::execute() const noexcept {
   PN_LOG_INFO(
@@ -57,4 +53,8 @@ ColorRGBA CommandLight::parseRGBA(std::string_view raw) noexcept {
   }
 
   return extractColorRGBA(rawColor);
+}
+
+void CommandLight::registerCommand() const noexcept {
+//  Lighting::getInstance().registerCommand(this);
 }

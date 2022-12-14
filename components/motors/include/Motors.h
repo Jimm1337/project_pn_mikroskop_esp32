@@ -14,23 +14,35 @@ class Motors final {
 private:
   static constexpr std::string_view LOG_TAG{ "Motors" };
 
+  static constexpr auto STACK_DEPTH = 4096;
+
 private:
-  CommandQueue m_commandQueueX;
-  CommandQueue m_commandQueueY;
-  CommandQueue m_commandQueueZ;
+  CommandQueue<CommandMotor> m_commandQueueX;
+  CommandQueue<CommandMotor> m_commandQueueY;
+  CommandQueue<CommandMotor> m_commandQueueZ;
+
+  static inline Motors*           s_instance{ nullptr };
+  static inline SemaphoreHandle_t s_semaphore{ nullptr };
+  static inline StaticSemaphore_t s_semaphoreBuffer{};
 
 public:
   Motors(const Motors& other)            = delete;
-  Motors(Motors&& other)                 = delete;
+  Motors(Motors&& other)                 = default;
   Motors& operator=(const Motors& other) = delete;
-  Motors& operator=(Motors&& other)      = delete;
+  Motors& operator=(Motors&& other)      = default;
   ~Motors() noexcept                     = default;
 
-  template<typename C>
-    requires std::is_same_v<CommandMotor, std::remove_cvref_t<C>>
-  void registerCommand(C&& command) noexcept;
+  void registerCommand(const CommandMotor* command) noexcept;
 
   static void startTasks() noexcept;
+
+  static inline Motors& getInstance() noexcept {
+    lock();
+    if (s_instance == nullptr) [[unlikely]] { s_instance = new Motors(); }
+    unlock();
+
+    return *s_instance;
+  }
 
 private:
   Motors() noexcept = default;
@@ -38,6 +50,27 @@ private:
   [[noreturn]] void taskX(void*) noexcept;
   [[noreturn]] void taskY(void*) noexcept;
   [[noreturn]] void taskZ(void*) noexcept;
+
+  static inline void initMutex() noexcept {
+    s_semaphore = xSemaphoreCreateMutexStatic(&s_semaphoreBuffer);
+    if (s_semaphore == nullptr) [[unlikely]] {
+      PN_LOG_ERROR("Failed to init mutex");
+    }
+  }
+
+  static inline void lock() noexcept {
+    xSemaphoreTake(s_semaphore, portMAX_DELAY);
+  }
+
+  static inline void unlock() noexcept {
+    xSemaphoreGive(s_semaphore);
+  }
+
+  inline void initQueues() noexcept {
+    m_commandQueueX.init();
+    m_commandQueueY.init();
+    m_commandQueueZ.init();
+  }
 };
 
 #endif // PROJECT_PN_MIKROSKOP_ESP32_MOTORS_H

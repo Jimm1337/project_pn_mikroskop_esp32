@@ -46,7 +46,10 @@ public:
   CommandLight& operator=(CommandLight&& other)      = default;
   ~CommandLight() noexcept                           = default;
 
-  explicit CommandLight(std::string_view raw) noexcept;
+  inline explicit CommandLight(std::string_view raw) noexcept:
+    m_led{ parseLed(raw) },
+    m_rgba{ parseRGBA(raw) } {
+  }
 
   esp_err_t execute() const noexcept; // NOLINT
 
@@ -57,6 +60,8 @@ public:
   [[nodiscard]] inline ColorRGBA getRGBA() const noexcept {
     return m_rgba;
   }
+
+  void registerCommand() const noexcept;
 
 private:
   [[nodiscard]] static LedNo     parseLed(std::string_view raw) noexcept;
@@ -71,4 +76,5 @@ private:
              static_cast<std::uint8_t>(raw & 0xFFU) };        // NOLINT
   }
 };
+
 #endif // PROJECT_PN_MIKROSKOP_ESP32_COMMANDLIGHT_H

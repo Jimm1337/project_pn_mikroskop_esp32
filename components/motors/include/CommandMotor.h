@@ -48,6 +48,11 @@ public:
     m_steps{ parseSteps(raw) } {
   }
 
+  consteval CommandMotor() noexcept:
+    m_axis{ Axis::INVALID },
+    m_steps{ STEPS_INVALID } {
+  }
+
   esp_err_t execute() const noexcept; // NOLINT
 
   [[nodiscard]] inline Axis getAxis() const noexcept {
@@ -57,6 +62,8 @@ public:
   [[nodiscard]] inline Steps getSteps() const noexcept {
     return m_steps;
   }
+
+  void registerCommand() const noexcept;
 
 private:
   [[nodiscard]] static Axis  parseAxis(std::string_view raw) noexcept;

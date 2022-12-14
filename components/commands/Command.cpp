@@ -1,10 +1,14 @@
-#include "Command.h"
+#include "include/Command.h"
 #include "esp_log.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
 
 esp_err_t Command::CommandInvalid::execute() noexcept {
   PN_FAIL(); // NOLINT
+}
+
+void Command::CommandInvalid::registerCommand() noexcept {
+  PN_LOG_WARN("CommandInvalid::registerCommand() called");
 }
 
 Command::Command(std::string_view rawCommand) noexcept:

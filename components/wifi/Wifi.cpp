@@ -12,7 +12,6 @@
 #include "lwip/sockets.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
-#include "CommandQueue.h"
 
 /**
  * @brief Start the wifi task.
@@ -178,7 +177,7 @@ esp_err_t Wifi::tcpCreateSocket(TcpSocket& out) noexcept {
 
 esp_err_t Wifi::tcpConnectServer(
   TcpSocket& sock, const sockaddr_in* addr) noexcept {
-  TcpErr err =
+  const TcpErr err =
     // NOLINTNEXTLINE
     ::connect(sock, reinterpret_cast<const sockaddr*>(addr), sizeof(*addr));
   PN_ERR_CHECK(err);
@@ -192,8 +191,8 @@ esp_err_t Wifi::tcpReceiveData(TcpSocket& sock) noexcept {
   esp_err_t err = Status::SUCCESS;
 
   while (true) {
-    DataBuffer rxBuffer{};
-    const TcpSize len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
+    DataBuffer    rxBuffer{};
+    TcpSize len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
 
     // Error occurred during receiving
     if (len < 0) [[unlikely]] {
@@ -210,7 +209,11 @@ esp_err_t Wifi::tcpReceiveData(TcpSocket& sock) noexcept {
 
     // Data received
     PN_LOG_INFO("Received %d bytes", len);
-    // todo: pass data outside, DON'T BREAK THE LOOP
+    rxBuffer.at(static_cast<size_t>(len)) = 0;
+    PN_LOG_INFO("Received command: %s", rxBuffer.data());
+
+    const auto command = Command{rxBuffer.data()};
+    command.registerCommand();
 
     PN_ERR_CHECK(err); // NOLINT
   }

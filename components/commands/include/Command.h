@@ -23,6 +23,7 @@ class Command final {
 
   public:
     static esp_err_t execute() noexcept;
+    static void      registerCommand() noexcept;
   };
 
   using UnionCommands =
@@ -43,10 +44,6 @@ public:
   consteval explicit Command() noexcept: m_command{ CommandInvalid{} } {
   }
 
-  inline void registerCommand() noexcept {
-    //todo
-  }
-
   inline void execute() const noexcept {
     std::visit([](auto&& command) { command.execute(); }, m_command);
   }
@@ -61,6 +58,10 @@ public:
 
   [[nodiscard]] inline bool holdsInvalidCommand() const noexcept {
     return std::holds_alternative<CommandInvalid>(m_command);
+  }
+
+  inline void registerCommand() const noexcept {
+     std::visit([](auto&& command) { command.registerCommand(); }, m_command);
   }
 
 private:
