@@ -4,7 +4,8 @@
 #include "pn_macros.h"
 
 esp_err_t Command::CommandInvalid::execute() noexcept {
-  PN_FAIL(); // NOLINT
+  PN_LOG_WARN("CommandInvalid::execute() called");
+  return Status::SUCCESS;
 }
 
 void Command::CommandInvalid::registerCommand() noexcept {

@@ -7,7 +7,7 @@
 #include "pn_logger.h"
 #include "Command.h"
 
-template <typename CommandType>
+template<typename CommandType>
 class CommandQueue final {
   static constexpr std::string_view LOG_TAG{ "CommandQueue" };
   static constexpr auto             QUEUE_LENGTH = 10;
@@ -17,9 +17,15 @@ private:
   QueueHandle_t m_queueHandle;
 
 public:
-  CommandQueue() noexcept = default;
   CommandQueue(const CommandQueue& other)            = delete;
   CommandQueue& operator=(const CommandQueue& other) = delete;
+
+  inline CommandQueue() noexcept:
+    m_queueHandle{ xQueueCreate(QUEUE_LENGTH, sizeof(CommandType)) } {
+    if (m_queueHandle == nullptr) [[unlikely]] {
+      PN_LOG_ERROR("Failed to create queue");
+    }
+  }
 
   inline CommandQueue(CommandQueue&& other) noexcept:
     m_queueHandle(other.m_queueHandle) {
@@ -38,20 +44,11 @@ public:
     vQueueDelete(m_queueHandle);
   }
 
-  inline void init() noexcept {
-    m_queueHandle = xQueueCreate(QUEUE_LENGTH, sizeof(CommandType));
-    if (m_queueHandle == nullptr) [[unlikely]] {
-      PN_LOG_ERROR("Failed to init queue");
-    }
-  }
-
   inline void push(const CommandType* command) noexcept {
     if (
       xQueueGenericSend(
-        m_queueHandle,
-        command,
-        QUEUE_TIME_TO_WAIT,
-        queueSEND_TO_BACK) == pdTRUE) [[likely]] {
+        m_queueHandle, command, QUEUE_TIME_TO_WAIT, queueSEND_TO_BACK) ==
+      pdTRUE) [[likely]] {
       PN_LOG_DEBUG("Pushed command to queue");
     } else {
       PN_LOG_ERROR("Failed to push command to queue");

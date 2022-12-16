@@ -12,12 +12,28 @@ ESP32 app for controlling the microscope and lightning.
 * LEDS: l00112121200
 * MOTORS: mx-1000, my100
 
-## Build guide:
+## Setup:
+Use [Config file](main/pn_config.h) to configure all settings. Especially Wi-Fi params.
 
-* Get esp-idf from GitHub
+## Build guide:
+Get esp-idf from GitHub.
+
+* Build
 
 ```shell
 $ idf.py build
+```
+
+* Flash
+
+```shell
+$ idf.py -p (PORT) flash
+```
+
+* Monitor
+
+```shell
+$ idf.py monitor
 ```
 
 ### For CLion:

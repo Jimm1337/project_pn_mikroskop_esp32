@@ -11,36 +11,37 @@ void Motors::registerCommand(const CommandMotor* command) noexcept {
   case Axis::Z:
     m_commandQueueZ.push(command);
     break;
-  default:
+  [[unlikely]] default:
     break;
   }
 }
 
-void Motors::startTasks() noexcept {
+void Motors::startTask() noexcept {
   initMutex();
-  getInstance().initQueues();
 
   xTaskCreate(
     [](void* param) noexcept { getInstance().taskX(param); },
     "MotorsX",
     STACK_DEPTH,
     nullptr,
-    1,
+    TASK_PRIORITY,
     nullptr);
   xTaskCreate(
     [](void* param) noexcept { getInstance().taskY(param); },
     "MotorsY",
     STACK_DEPTH,
     nullptr,
-    1,
+    TASK_PRIORITY,
     nullptr);
   xTaskCreate(
     [](void* param) noexcept { getInstance().taskZ(param); },
     "MotorsZ",
     STACK_DEPTH,
     nullptr,
-    1,
+    TASK_PRIORITY,
     nullptr);
+
+  PN_LOG_INFO("Started Motors tasks");
 }
 
 [[noreturn]] void Motors::taskX(void* /*pvParameters*/) noexcept {
@@ -51,7 +52,6 @@ void Motors::startTasks() noexcept {
     }
 
     auto command = m_commandQueueX.pop();
-
     command.execute();
   }
 }
@@ -64,7 +64,6 @@ void Motors::startTasks() noexcept {
     }
 
     auto command = m_commandQueueY.pop();
-
     command.execute();
   }
 }
@@ -77,7 +76,6 @@ void Motors::startTasks() noexcept {
     }
 
     auto command = m_commandQueueZ.pop();
-
     command.execute();
   }
 }

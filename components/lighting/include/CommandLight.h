@@ -4,6 +4,7 @@
 #include <esp_err.h>
 #include <limits>
 #include <string_view>
+#include "pn_logger.h"
 
 struct ColorRGBA {
   std::uint8_t red;
@@ -35,6 +36,8 @@ class CommandLight final {
   static constexpr LedNo     INVALID_LED   = std::numeric_limits<LedNo>::max();
   static constexpr ColorRGBA INVALID_COLOR = { 0, 0, 0, 0 };
 
+  static constexpr auto MIN_LENGTH = 13;
+
 private:
   LedNo     m_led;
   ColorRGBA m_rgba;
@@ -47,8 +50,17 @@ public:
   ~CommandLight() noexcept                           = default;
 
   inline explicit CommandLight(std::string_view raw) noexcept:
-    m_led{ parseLed(raw) },
-    m_rgba{ parseRGBA(raw) } {
+    m_led{ INVALID_LED },
+    m_rgba{ INVALID_COLOR } {
+    if (validate(raw)) {
+      m_led  = parseLed(raw);
+      m_rgba = parseRGBA(raw);
+    }
+  }
+
+  constexpr CommandLight() noexcept:
+    m_led{ INVALID_LED },
+    m_rgba{ INVALID_COLOR } {
   }
 
   esp_err_t execute() const noexcept; // NOLINT
@@ -75,6 +87,8 @@ private:
              static_cast<std::uint8_t>((raw >> 8U) & 0xFFU),  // NOLINT
              static_cast<std::uint8_t>(raw & 0xFFU) };        // NOLINT
   }
+
+  [[nodiscard]] static bool validate(std::string_view raw) noexcept;
 };
 
 #endif // PROJECT_PN_MIKROSKOP_ESP32_COMMANDLIGHT_H

@@ -22,6 +22,8 @@ class Command final {
     uint32_t m_pad2;
 
   public:
+    constexpr CommandInvalid() noexcept = default;
+
     static esp_err_t execute() noexcept;
     static void      registerCommand() noexcept;
   };
@@ -41,12 +43,12 @@ public:
 
   explicit Command(std::string_view rawCommand) noexcept;
 
-  consteval explicit Command() noexcept: m_command{ CommandInvalid{} } {
+  constexpr Command() noexcept: m_command{ CommandInvalid{} } {
   }
 
-  inline void execute() const noexcept {
-    std::visit([](auto&& command) { command.execute(); }, m_command);
-  }
+  // inline void execute() const noexcept {
+  //   std::visit([](auto&& command) { command.execute(); }, m_command);
+  // }
 
   [[nodiscard]] inline bool holdsMotorCommand() const noexcept {
     return std::holds_alternative<CommandMotor>(m_command);
@@ -61,7 +63,7 @@ public:
   }
 
   inline void registerCommand() const noexcept {
-     std::visit([](auto&& command) { command.registerCommand(); }, m_command);
+    std::visit([](auto&& command) { command.registerCommand(); }, m_command);
   }
 
 private:

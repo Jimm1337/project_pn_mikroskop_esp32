@@ -1,6 +1,7 @@
 #ifndef PROJECT_PN_MIKROSKOP_ESP32_WIFI_H
 #define PROJECT_PN_MIKROSKOP_ESP32_WIFI_H
 
+#include "pn_config.h"
 #include <lwip/sockets.h>
 #include <unistd.h>
 #include <array>
@@ -12,20 +13,20 @@
 #include "freertos/FreeRTOS.h"
 
 class Wifi final {
-  // TODO: SET THIS TO YOUR OWN WIFI CREDENTIALS
-
   static constexpr std::string_view LOG_TAG{ "Wifi handler" };
 
-  static constexpr std::string_view SSID{ "ssid" };
-  static constexpr std::string_view PASSWORD{ "password" };
-  static constexpr auto             AUTH_MODE{ WIFI_AUTH_WPA2_PSK };
-  static constexpr std::string_view SERVER_IP{ "\0" };
-  static constexpr std::uint16_t    SERVER_PORT = 0x0;
+  static constexpr std::array<std::uint8_t, 32> SSID{ PN_CONFIG_WIFI_SSID };
+  static constexpr std::array<std::uint8_t, 64> PASSWORD{ PN_CONFIG_WIFI_PASS };
+  static constexpr auto             AUTH_MODE{ PN_CONFIG_WIFI_AUTH };
+  static constexpr std::string_view SERVER_IP{ PN_CONFIG_WIFI_ADDR };
+  static constexpr std::uint16_t    SERVER_PORT = PN_CONFIG_WIFI_PORT;
 
-  static constexpr auto BUFFER_SIZE = 64;
-
+  static constexpr auto BUFFER_SIZE   = 64;
   static constexpr auto STACK_SIZE    = 4096;
   static constexpr auto TASK_PRIORITY = 5;
+
+  static constexpr auto WIFI_CONNECTED_BIT = BIT0;
+  static constexpr auto WIFI_FAIL_BIT      = BIT1;
 
   using TcpSocket = int;
   using TcpErr    = int;

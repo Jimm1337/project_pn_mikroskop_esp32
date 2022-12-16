@@ -5,12 +5,13 @@
 #include <charconv>
 #include <string_view>
 #include "esp_log.h"
+#include "pn_logger.h"
 
 enum class Axis : std::int_fast8_t {
   X,
   Y,
   Z,
-  INVALID = -1
+  INVALID
 };
 
 /**
@@ -32,6 +33,8 @@ class CommandMotor final {
 
   static constexpr Steps STEPS_INVALID = 0;
 
+  static constexpr auto MIN_LENGTH = 4;
+
 private:
   Axis  m_axis;
   Steps m_steps;
@@ -44,11 +47,15 @@ public:
   ~CommandMotor() noexcept                           = default;
 
   inline explicit CommandMotor(std::string_view raw) noexcept:
-    m_axis{ parseAxis(raw) },
-    m_steps{ parseSteps(raw) } {
+    m_axis{ Axis::INVALID },
+    m_steps{ STEPS_INVALID } {
+    if (validate(raw)) {
+      m_axis  = parseAxis(raw);
+      m_steps = parseSteps(raw);
+    }
   }
 
-  consteval CommandMotor() noexcept:
+  constexpr CommandMotor() noexcept:
     m_axis{ Axis::INVALID },
     m_steps{ STEPS_INVALID } {
   }
@@ -68,6 +75,8 @@ public:
 private:
   [[nodiscard]] static Axis  parseAxis(std::string_view raw) noexcept;
   [[nodiscard]] static Steps parseSteps(std::string_view raw) noexcept;
+
+  [[nodiscard]] static bool validate(std::string_view raw) noexcept;
 };
 
 #endif // PROJECT_PN_MIKROSKOP_ESP32_COMMANDMOTOR_H

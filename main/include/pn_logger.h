@@ -164,7 +164,7 @@ inline void location(
     std::source_location::current()) noexcept {
 }
 
-} // namespace pn::log
+} // namespace pn::internal::log
 
 #endif // DEBUG
 
@@ -181,8 +181,8 @@ inline void location(
     PN_VALIDATE_TAG();                                                         \
     pn::internal::log::location(LOG_TAG.data());                               \
     pn::internal::log::warn(                                                   \
-      LOG_TAG.data(), LOG_FORMAT(W, format), ##__VA_ARGS__);                    \
-  } while(false)
+      LOG_TAG.data(), LOG_FORMAT(W, format), ##__VA_ARGS__);                   \
+  } while (false)
 
 #define PN_LOG_ERROR(format, ...)                                              \
   do {                                                                         \
@@ -212,7 +212,8 @@ inline void location(
   do {                                                                         \
     PN_VALIDATE_TAG();                                                         \
     pn::internal::log::location(LOG_TAG.data());                               \
-    pn::internal::log::invalidData(LOG_TAG.data(), format, ##__VA_ARGS__);     \
+    pn::internal::log::invalidData(                                            \
+      LOG_TAG.data(), LOG_FORMAT(W, format), ##__VA_ARGS__);                   \
   } while (false)
 
 #define PN_LOG_UNREACHABLE()                                                   \

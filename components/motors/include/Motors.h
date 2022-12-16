@@ -11,19 +11,19 @@
 #include <memory>
 
 class Motors final {
-private:
   static constexpr std::string_view LOG_TAG{ "Motors" };
 
-  static constexpr auto STACK_DEPTH = 4096;
+  static constexpr auto STACK_DEPTH   = 4096;
+  static constexpr auto TASK_PRIORITY = 1;
 
 private:
   CommandQueue<CommandMotor> m_commandQueueX;
   CommandQueue<CommandMotor> m_commandQueueY;
   CommandQueue<CommandMotor> m_commandQueueZ;
 
-  static inline Motors*           s_instance{ nullptr };
-  static inline SemaphoreHandle_t s_semaphore{ nullptr };
-  static inline StaticSemaphore_t s_semaphoreBuffer{};
+  static inline std::unique_ptr<Motors> s_instance{ nullptr };
+  static inline SemaphoreHandle_t       s_semaphore{ nullptr };
+  static inline StaticSemaphore_t       s_semaphoreBuffer{};
 
 public:
   Motors(const Motors& other)            = delete;
@@ -34,11 +34,13 @@ public:
 
   void registerCommand(const CommandMotor* command) noexcept;
 
-  static void startTasks() noexcept;
+  static void startTask() noexcept;
 
   static inline Motors& getInstance() noexcept {
     lock();
-    if (s_instance == nullptr) [[unlikely]] { s_instance = new Motors(); }
+    if (s_instance == nullptr) [[unlikely]] {
+      s_instance = std::unique_ptr<Motors>(new Motors());
+    }
     unlock();
 
     return *s_instance;
@@ -64,12 +66,6 @@ private:
 
   static inline void unlock() noexcept {
     xSemaphoreGive(s_semaphore);
-  }
-
-  inline void initQueues() noexcept {
-    m_commandQueueX.init();
-    m_commandQueueY.init();
-    m_commandQueueZ.init();
   }
 };
 

@@ -21,7 +21,10 @@ void Wifi::startTask() noexcept {
     [](void*) {
     Wifi wifi{};
     wifi.connect();
-    wifi.startReceiving();
+    while (true) {
+      wifi.startReceiving();
+      PN_LOG_WARN("Wifi task stopped receiving");
+    }
     },
     "wifi",
     STACK_SIZE,
@@ -33,16 +36,8 @@ void Wifi::startTask() noexcept {
 Wifi::Wifi() noexcept:
   m_wifiConfig{ [] {
     wifi_config_t cfg{};
-    std::strncpy(
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-      reinterpret_cast<char*>(cfg.sta.ssid),
-      SSID.data(),
-      SSID.size() + 1);
-    std::strncpy(
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-      reinterpret_cast<char*>(cfg.sta.password),
-      PASSWORD.data(),
-      PASSWORD.size() + 1);
+    std::memcpy(cfg.sta.ssid, SSID.data(), SSID.size());             // NOLINT
+    std::memcpy(cfg.sta.password, PASSWORD.data(), PASSWORD.size()); // NOLINT
     cfg.sta.threshold.authmode = AUTH_MODE;
     cfg.sta.pmf_cfg.capable    = true;
     cfg.sta.pmf_cfg.required   = false;
@@ -50,7 +45,7 @@ Wifi::Wifi() noexcept:
   }() } {
   ESP_ERROR_CHECK(esp_netif_init());
   esp_netif_create_default_wifi_sta();
-  wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+  const wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&config));
   s_wifiEventGroup = xEventGroupCreate();
 }
@@ -69,7 +64,7 @@ void Wifi::connect() noexcept {
 }
 
 void Wifi::startReceiving() noexcept {
-  sockaddr_in destAddr = [] {
+  const sockaddr_in destAddr = [] {
     sockaddr_in addr{};
     addr.sin_addr.s_addr = inet_addr(SERVER_IP.data());
     addr.sin_family      = AF_INET;
@@ -116,16 +111,16 @@ esp_err_t Wifi::connectSetup() noexcept {
 
 esp_err_t Wifi::connectWaitForConnection() noexcept {
   // NOLINTNEXTLINE
-  static constexpr EventBits_t waitCondition = Status::SUCCESS | Status::FAIL;
+  static constexpr auto waitCondition = WIFI_CONNECTED_BIT | WIFI_FAIL_BIT;
 
   const EventBits_t bits = xEventGroupWaitBits(
     s_wifiEventGroup, waitCondition, pdFALSE, pdFALSE, portMAX_DELAY);
 
-  if ((bits & Status::SUCCESS) != 0) [[likely]] { // NOLINT
+  if ((bits & WIFI_CONNECTED_BIT) != 0) [[likely]] { // NOLINT
     PN_LOG_INFO("Connected to AP");
     return Status::SUCCESS;
-  } else if ((bits & Status::FAIL) != 0) [[unlikely]] { // NOLINT
-    PN_LOG_WARN("Failed to connect to AP");
+  } else if ((bits & WIFI_FAIL_BIT) != 0) [[unlikely]] { // NOLINT
+    PN_LOG_ERROR("Failed to connect to AP");
     return Status::FAIL;
   }
 
@@ -133,7 +128,7 @@ esp_err_t Wifi::connectWaitForConnection() noexcept {
 }
 
 void Wifi::eventHandlerWifi(
-  void*            arg, // NOLINT
+  void* /*arg*/,
   esp_event_base_t eventBase,
   std::int32_t     eventId,
   void*            eventData) noexcept { // NOLINT
@@ -144,13 +139,13 @@ void Wifi::eventHandlerWifi(
     PN_LOG_WARN("Disconnected from AP, trying to reconnect...");
     ESP_ERROR_CHECK(esp_wifi_connect());
 
-    xEventGroupClearBits(s_wifiEventGroup, Status::SUCCESS);
-    xEventGroupSetBits(s_wifiEventGroup, Status::FAIL);
+    xEventGroupClearBits(s_wifiEventGroup, WIFI_CONNECTED_BIT);
+    xEventGroupSetBits(s_wifiEventGroup, WIFI_FAIL_BIT);
   }
 }
 
 void Wifi::eventHandlerIp(
-  void*            arg, // NOLINT
+  void* /*arg*/,
   esp_event_base_t eventBase,
   std::int32_t     eventId,
   void*            eventData) noexcept {
@@ -158,7 +153,7 @@ void Wifi::eventHandlerIp(
     auto* event = static_cast<ip_event_got_ip_t*>(eventData);
     PN_LOG_INFO("Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
 
-    xEventGroupSetBits(s_wifiEventGroup, Status::SUCCESS);
+    xEventGroupSetBits(s_wifiEventGroup, WIFI_CONNECTED_BIT);
   }
 }
 
@@ -188,35 +183,31 @@ esp_err_t Wifi::tcpConnectServer(
 }
 
 esp_err_t Wifi::tcpReceiveData(TcpSocket& sock) noexcept {
-  esp_err_t err = Status::SUCCESS;
-
   while (true) {
     DataBuffer    rxBuffer{};
-    TcpSize len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
+    const TcpSize len = recv(sock, rxBuffer.data(), rxBuffer.size() - 1, 0);
 
     // Error occurred during receiving
     if (len < 0) [[unlikely]] {
       PN_LOG_WARN("recv failed: errno %d", errno);
-      err = Status::FAIL;
+      close(sock);
+      break;
     }
 
     // Connection closed
     else if (len == 0) [[unlikely]] {
       PN_LOG_INFO("Connection closed");
-      err = Status::SUCCESS;
       break;
     }
 
     // Data received
     PN_LOG_INFO("Received %d bytes", len);
-    rxBuffer.at(static_cast<size_t>(len)) = 0;
+    rxBuffer.at(static_cast<size_t>(len)) = '\0';
     PN_LOG_INFO("Received command: %s", rxBuffer.data());
 
-    const auto command = Command{rxBuffer.data()};
+    const auto command = Command{ rxBuffer.data() };
     command.registerCommand();
-
-    PN_ERR_CHECK(err); // NOLINT
   }
 
-  return err;
+  return Status::SUCCESS;
 }

@@ -1,5 +1,6 @@
 #include "CommandLight.h"
 #include <charconv>
+#include <algorithm>
 #include "esp_log.h"
 #include "pn_logger.h"
 #include "pn_macros.h"
@@ -21,6 +22,11 @@ esp_err_t CommandLight::execute() const noexcept {
 CommandLight::LedNo CommandLight::parseLed(std::string_view raw) noexcept {
   LedNo led = INVALID_LED;
 
+  if (raw.length() < LED_SPECIFIER_POS + 1) {
+    PN_LOG_WARN("No LED in command: %s", raw.data());
+    return led;
+  }
+
   auto err = std::from_chars(
                raw.begin() + LED_SPECIFIER_POS,
                raw.begin() + LED_SPECIFIER_END,
@@ -37,6 +43,11 @@ CommandLight::LedNo CommandLight::parseLed(std::string_view raw) noexcept {
 }
 
 ColorRGBA CommandLight::parseRGBA(std::string_view raw) noexcept {
+  if (raw.length() < RGBA_SPECIFIER_POS + 1) {
+    PN_LOG_WARN("No RGBA in command: %s", raw.data());
+    return INVALID_COLOR;
+  }
+
   std::uint32_t rawColor{};
 
   auto err = std::from_chars(
@@ -56,5 +67,28 @@ ColorRGBA CommandLight::parseRGBA(std::string_view raw) noexcept {
 }
 
 void CommandLight::registerCommand() const noexcept {
-//  Lighting::getInstance().registerCommand(this);
+  // Lighting::getInstance().registerCommand(this);
+}
+
+bool CommandLight::validate(std::string_view raw) noexcept {
+  const auto len = raw.length();
+  if (len != MIN_LENGTH) [[unlikely]] {
+    PN_LOG_WARN("Command is of wrong length: %d vs %d", len, MIN_LENGTH);
+    return false;
+  }
+
+  if (!std::ranges::all_of(raw.substr(LED_SPECIFIER_POS, 3), isdigit))
+    [[unlikely]] {
+    PN_LOG_WARN("LED contains non-digit characters");
+    return false;
+  }
+
+  if (!std::ranges::all_of(raw.substr(RGBA_SPECIFIER_POS), [](const auto chr) {
+        return std::isxdigit(chr) || chr == '\0' || chr == '\n' || chr == '\r';
+      })) [[unlikely]] {
+    PN_LOG_WARN("Color contains non-hex characters");
+    return false;
+  }
+
+  return true;
 }
