@@ -83,7 +83,6 @@ IndentCaseLabels: false
 IndentExternBlock: NoIndent
 IndentGotoLabels: false
 IndentPPDirectives: None
-IndentRequires: false
 IndentWrappedFunctionNames: false
 LambdaBodyIndentation: OuterScope
 NamespaceIndentation: None
@@ -128,7 +127,7 @@ BraceWrapping:
 
 # includes
 IncludeBlocks: Merge
-SortIncludes: CaseInsensitive
+SortIncludes: Never
 
 # macros
 IfMacros: ['IF']

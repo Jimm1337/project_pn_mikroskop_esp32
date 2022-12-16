@@ -8,5 +8,6 @@ set(CMAKE_C_STANDARD 11)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-#add_compile_options(-Wall -Wextra -Wpedantic)
 project(project_pn_mikroskop_esp32)
+
+set(CMAKE_CXX_CPPCHECK "cppcheck")
