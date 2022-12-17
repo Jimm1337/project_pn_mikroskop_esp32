@@ -40,15 +40,6 @@ $ idf.py monitor
 
 * add env variable IDF_PATH to cmake
 
-### Troubleshooting:
-
-* idf.py no python -> make sure 'python' is in PATH
-* idf.py no command -> rerun install.sh and . ./export.sh in esp-idf
-* Clion problems -> refer to https://www.jetbrains.com/help/clion/esp-idf.html
-
-## For CLion:
- * add env variable IDF_PATH to cmake
-
 ## Troubleshooting:
  * idf.py no python -> make sure 'python' is in PATH
  * idf.py no command -> rerun install.sh and . ./export.sh in esp-idf
