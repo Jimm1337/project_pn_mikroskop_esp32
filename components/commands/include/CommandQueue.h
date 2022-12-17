@@ -7,25 +7,36 @@
 #include "pn_logger.h"
 #include "Command.h"
 
-template<typename CommandType>
+template<typename T>
+concept validCMD = requires(T cmd) {
+                     { cmd.execute() } -> std::same_as<esp_err_t>;
+                     { cmd.registerCommand() } -> std::same_as<void>;
+                   };
+
+template<validCMD CommandType>
 class CommandQueue final {
   static constexpr std::string_view LOG_TAG{ "CommandQueue" };
-  static constexpr auto             QUEUE_LENGTH = 10;
-  static constexpr auto QUEUE_TIME_TO_WAIT       = 1000 / portTICK_PERIOD_MS;
+
+  static constexpr auto QUEUE_LENGTH       = 10;
+  static constexpr auto QUEUE_TIME_TO_WAIT = 1000 / portTICK_PERIOD_MS;
 
 private:
   QueueHandle_t m_queueHandle;
 
 public:
-  CommandQueue(const CommandQueue& other)            = delete;
-  CommandQueue& operator=(const CommandQueue& other) = delete;
-
   inline CommandQueue() noexcept:
     m_queueHandle{ xQueueCreate(QUEUE_LENGTH, sizeof(CommandType)) } {
     if (m_queueHandle == nullptr) [[unlikely]] {
       PN_LOG_ERROR("Failed to create queue");
     }
   }
+
+  inline ~CommandQueue() noexcept {
+    vQueueDelete(m_queueHandle);
+  }
+
+  CommandQueue(const CommandQueue& other)            = delete;
+  CommandQueue& operator=(const CommandQueue& other) = delete;
 
   inline CommandQueue(CommandQueue&& other) noexcept:
     m_queueHandle(other.m_queueHandle) {
@@ -38,10 +49,6 @@ public:
       other.m_queueHandle = nullptr;
     }
     return *this;
-  }
-
-  inline ~CommandQueue() noexcept {
-    vQueueDelete(m_queueHandle);
   }
 
   inline void push(const CommandType* command) noexcept {

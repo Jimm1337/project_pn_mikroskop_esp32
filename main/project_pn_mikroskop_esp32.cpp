@@ -1,4 +1,3 @@
-#include <cstdio>
 #include "freertos/freeRTOS.h"
 #include "pn_global.h"
 #include "Wifi.h"
@@ -9,4 +8,3 @@ extern "C" void app_main() {
   Motors::startTask();
   Wifi::startTask();
 }
-

@@ -35,20 +35,24 @@ private:
   UnionCommands m_command;
 
 public:
+  explicit Command(std::string_view rawCommand) noexcept;
+
+  constexpr Command() noexcept: m_command{ CommandInvalid{} } {
+  }
+
   Command(const Command& other)            = default;
   Command(Command&& other)                 = default;
   Command& operator=(const Command& other) = default;
   Command& operator=(Command&& other)      = default;
   ~Command() noexcept                      = default;
 
-  explicit Command(std::string_view rawCommand) noexcept;
-
-  constexpr Command() noexcept: m_command{ CommandInvalid{} } {
+  inline void execute() const noexcept {
+    std::visit([](auto&& command) { command.execute(); }, m_command);
   }
 
-  // inline void execute() const noexcept {
-  //   std::visit([](auto&& command) { command.execute(); }, m_command);
-  // }
+  inline void registerCommand() const noexcept {
+    std::visit([](auto&& command) { command.registerCommand(); }, m_command);
+  }
 
   [[nodiscard]] inline bool holdsMotorCommand() const noexcept {
     return std::holds_alternative<CommandMotor>(m_command);
@@ -60,10 +64,6 @@ public:
 
   [[nodiscard]] inline bool holdsInvalidCommand() const noexcept {
     return std::holds_alternative<CommandInvalid>(m_command);
-  }
-
-  inline void registerCommand() const noexcept {
-    std::visit([](auto&& command) { command.registerCommand(); }, m_command);
   }
 
 private:

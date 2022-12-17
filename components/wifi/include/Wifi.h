@@ -15,24 +15,20 @@
 class Wifi final {
   static constexpr std::string_view LOG_TAG{ "Wifi handler" };
 
+  using TcpSocket  = int;
+  using TcpErr     = int;
+  using TcpSize    = ssize_t;
+  using DataBuffer = std::array<char, 64>;
+
   static constexpr std::array<std::uint8_t, 32> SSID{ PN_CONFIG_WIFI_SSID };
   static constexpr std::array<std::uint8_t, 64> PASSWORD{ PN_CONFIG_WIFI_PASS };
   static constexpr auto             AUTH_MODE{ PN_CONFIG_WIFI_AUTH };
   static constexpr std::string_view SERVER_IP{ PN_CONFIG_WIFI_ADDR };
-  static constexpr std::uint16_t    SERVER_PORT = PN_CONFIG_WIFI_PORT;
-
-  static constexpr auto BUFFER_SIZE   = 64;
-  static constexpr auto STACK_SIZE    = 4096;
-  static constexpr auto TASK_PRIORITY = 5;
-
-  static constexpr auto WIFI_CONNECTED_BIT = BIT0;
-  static constexpr auto WIFI_FAIL_BIT      = BIT1;
-
-  using TcpSocket = int;
-  using TcpErr    = int;
-  using TcpSize   = ssize_t;
-
-  using DataBuffer = std::array<char, BUFFER_SIZE>;
+  static constexpr std::uint16_t    SERVER_PORT        = PN_CONFIG_WIFI_PORT;
+  static constexpr auto             STACK_SIZE         = 4096;
+  static constexpr auto             TASK_PRIORITY      = 5;
+  static constexpr auto             WIFI_CONNECTED_BIT = BIT0;
+  static constexpr auto             WIFI_FAIL_BIT      = BIT1;
 
 private:
   static inline EventGroupHandle_t s_wifiEventGroup{};
@@ -40,13 +36,13 @@ private:
   wifi_config_t m_wifiConfig;
 
 public:
-  static void startTask() noexcept;
-
   Wifi(const Wifi& other)            = delete;
   Wifi(Wifi&& other)                 = delete;
   Wifi& operator=(const Wifi& other) = delete;
   Wifi& operator=(Wifi&& other)      = delete;
   ~Wifi() noexcept                   = default;
+
+  static void startTask() noexcept;
 
 private:
   Wifi() noexcept;
@@ -56,7 +52,6 @@ private:
    * @note Call first
    */
   void connect() noexcept;
-
   /**
    * @brief Starts receiving data from the server.
    * @note Call after connect()
@@ -68,12 +63,12 @@ private:
   static esp_err_t connectWaitForConnection() noexcept;
 
   static void eventHandlerWifi(
-    void*            arg,
+    void*            /*arg*/,
     esp_event_base_t eventBase,
     std::int32_t     eventId,
-    void*            eventData) noexcept;
+    void*            /*eventData*/) noexcept;
   static void eventHandlerIp(
-    void*            arg,
+    void*            /*arg*/,
     esp_event_base_t eventBase,
     std::int32_t     eventId,
     void*            eventData) noexcept;

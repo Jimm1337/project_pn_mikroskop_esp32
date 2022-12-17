@@ -17,13 +17,13 @@ class Motors final {
   static constexpr auto TASK_PRIORITY = 1;
 
 private:
-  CommandQueue<CommandMotor> m_commandQueueX;
-  CommandQueue<CommandMotor> m_commandQueueY;
-  CommandQueue<CommandMotor> m_commandQueueZ;
-
   static inline std::unique_ptr<Motors> s_instance{ nullptr };
   static inline SemaphoreHandle_t       s_semaphore{ nullptr };
   static inline StaticSemaphore_t       s_semaphoreBuffer{};
+
+  CommandQueue<CommandMotor> m_commandQueueX;
+  CommandQueue<CommandMotor> m_commandQueueY;
+  CommandQueue<CommandMotor> m_commandQueueZ;
 
 public:
   Motors(const Motors& other)            = delete;
@@ -32,8 +32,7 @@ public:
   Motors& operator=(Motors&& other)      = default;
   ~Motors() noexcept                     = default;
 
-  void registerCommand(const CommandMotor* command) noexcept;
-
+  void        registerCommand(const CommandMotor* command) noexcept;
   static void startTask() noexcept;
 
   static inline Motors& getInstance() noexcept {

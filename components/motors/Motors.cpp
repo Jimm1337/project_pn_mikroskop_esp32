@@ -5,12 +5,15 @@ void Motors::registerCommand(const CommandMotor* command) noexcept {
   case Axis::X:
     m_commandQueueX.push(command);
     break;
+
   case Axis::Y:
     m_commandQueueY.push(command);
     break;
+
   case Axis::Z:
     m_commandQueueZ.push(command);
     break;
+
   [[unlikely]] default:
     break;
   }
@@ -26,6 +29,7 @@ void Motors::startTask() noexcept {
     nullptr,
     TASK_PRIORITY,
     nullptr);
+
   xTaskCreate(
     [](void* param) noexcept { getInstance().taskY(param); },
     "MotorsY",
@@ -33,6 +37,7 @@ void Motors::startTask() noexcept {
     nullptr,
     TASK_PRIORITY,
     nullptr);
+
   xTaskCreate(
     [](void* param) noexcept { getInstance().taskZ(param); },
     "MotorsZ",

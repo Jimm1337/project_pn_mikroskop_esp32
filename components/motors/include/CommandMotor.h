@@ -24,28 +24,19 @@ enum class Axis : std::int_fast8_t {
 class CommandMotor final {
   static constexpr std::string_view LOG_TAG{ "CommandMotor" };
 
-  static constexpr auto AXIS_SPECIFIER_POS  = 1; // len = 1
-  static constexpr auto STEPS_SPECIFIER_POS = 2; // len = ?
-
-  static constexpr auto STEPS_BASE = 10;
-
   using Steps = std::int_fast16_t;
 
-  static constexpr Steps STEPS_INVALID = 0;
-
-  static constexpr auto MIN_LENGTH = 4;
+  static constexpr auto  AXIS_SPECIFIER_POS  = 1; // len = 1
+  static constexpr auto  STEPS_SPECIFIER_POS = 2; // len = ?
+  static constexpr auto  STEPS_BASE          = 10;
+  static constexpr Steps STEPS_INVALID       = 0;
+  static constexpr auto  MIN_LENGTH          = 4;
 
 private:
   Axis  m_axis;
   Steps m_steps;
 
 public:
-  CommandMotor(const CommandMotor& other)            = default;
-  CommandMotor(CommandMotor&& other)                 = default;
-  CommandMotor& operator=(const CommandMotor& other) = default;
-  CommandMotor& operator=(CommandMotor&& other)      = default;
-  ~CommandMotor() noexcept                           = default;
-
   inline explicit CommandMotor(std::string_view raw) noexcept:
     m_axis{ Axis::INVALID },
     m_steps{ STEPS_INVALID } {
@@ -60,7 +51,14 @@ public:
     m_steps{ STEPS_INVALID } {
   }
 
+  CommandMotor(const CommandMotor& other)            = default;
+  CommandMotor(CommandMotor&& other)                 = default;
+  CommandMotor& operator=(const CommandMotor& other) = default;
+  CommandMotor& operator=(CommandMotor&& other)      = default;
+  ~CommandMotor() noexcept                           = default;
+
   esp_err_t execute() const noexcept; // NOLINT
+  void      registerCommand() const noexcept;
 
   [[nodiscard]] inline Axis getAxis() const noexcept {
     return m_axis;
@@ -70,13 +68,10 @@ public:
     return m_steps;
   }
 
-  void registerCommand() const noexcept;
-
 private:
   [[nodiscard]] static Axis  parseAxis(std::string_view raw) noexcept;
   [[nodiscard]] static Steps parseSteps(std::string_view raw) noexcept;
-
-  [[nodiscard]] static bool validate(std::string_view raw) noexcept;
+  [[nodiscard]] static bool  validate(std::string_view raw) noexcept;
 };
 
 #endif // PROJECT_PN_MIKROSKOP_ESP32_COMMANDMOTOR_H

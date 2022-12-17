@@ -18,9 +18,3 @@ Checks: "*,
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 FormatStyle:     none
-
-
-
-
-
-

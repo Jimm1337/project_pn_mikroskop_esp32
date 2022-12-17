@@ -19,6 +19,10 @@ esp_err_t CommandLight::execute() const noexcept {
   PN_UNIMPLEMENTED();
 }
 
+void CommandLight::registerCommand() const noexcept {
+  // Lighting::getInstance().registerCommand(this);
+}
+
 CommandLight::LedNo CommandLight::parseLed(std::string_view raw) noexcept {
   LedNo led = INVALID_LED;
 
@@ -64,10 +68,6 @@ ColorRGBA CommandLight::parseRGBA(std::string_view raw) noexcept {
   }
 
   return extractColorRGBA(rawColor);
-}
-
-void CommandLight::registerCommand() const noexcept {
-  // Lighting::getInstance().registerCommand(this);
 }
 
 bool CommandLight::validate(std::string_view raw) noexcept {

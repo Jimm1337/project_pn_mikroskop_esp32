@@ -43,10 +43,12 @@ Wifi::Wifi() noexcept:
     cfg.sta.pmf_cfg.required   = false;
     return cfg;
   }() } {
-  ESP_ERROR_CHECK(esp_netif_init());
+  ESP_ERROR_CHECK(esp_netif_init()); //NOLINT
   esp_netif_create_default_wifi_sta();
+
   const wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK(esp_wifi_init(&config));
+  ESP_ERROR_CHECK(esp_wifi_init(&config)); //NOLINT
+
   s_wifiEventGroup = xEventGroupCreate();
 }
 
@@ -56,11 +58,12 @@ void Wifi::connect() noexcept {
     return;
   }
 
-  ESP_ERROR_CHECK(connectRegisterHandlers());
-  ESP_ERROR_CHECK(connectSetup());
-  ESP_ERROR_CHECK(connectWaitForConnection());
+  ESP_ERROR_CHECK(connectRegisterHandlers()); //NOLINT
+  ESP_ERROR_CHECK(connectSetup()); //NOLINT
+  ESP_ERROR_CHECK(connectWaitForConnection()); //NOLINT
 
   vEventGroupDelete(s_wifiEventGroup);
+  s_wifiEventGroup = nullptr;
 }
 
 void Wifi::startReceiving() noexcept {
@@ -73,13 +76,13 @@ void Wifi::startReceiving() noexcept {
   }();
 
   TcpSocket socket{};
-  ESP_ERROR_CHECK(tcpCreateSocket(socket));
-  ESP_ERROR_CHECK(tcpConnectServer(socket, &destAddr));
-  ESP_ERROR_CHECK(tcpReceiveData(socket)); // inf loop
+  ESP_ERROR_CHECK(tcpCreateSocket(socket)); //NOLINT
+  ESP_ERROR_CHECK(tcpConnectServer(socket, &destAddr)); //NOLINT
+  ESP_ERROR_CHECK(tcpReceiveData(socket)); // inf loop //NOLINT
 }
 
 esp_err_t Wifi::connectRegisterHandlers() noexcept {
-  esp_err_t err{};
+  esp_err_t err;
 
   err = esp_event_handler_instance_register(
     WIFI_EVENT, ESP_EVENT_ANY_ID, &Wifi::eventHandlerWifi, nullptr, nullptr);
@@ -93,7 +96,7 @@ esp_err_t Wifi::connectRegisterHandlers() noexcept {
 }
 
 esp_err_t Wifi::connectSetup() noexcept {
-  esp_err_t err{};
+  esp_err_t err;
 
   err = esp_wifi_set_mode(WIFI_MODE_STA);
   PN_ERR_CHECK(err);
@@ -119,25 +122,28 @@ esp_err_t Wifi::connectWaitForConnection() noexcept {
   if ((bits & WIFI_CONNECTED_BIT) != 0) [[likely]] { // NOLINT
     PN_LOG_INFO("Connected to AP");
     return Status::SUCCESS;
+
   } else if ((bits & WIFI_FAIL_BIT) != 0) [[unlikely]] { // NOLINT
     PN_LOG_ERROR("Failed to connect to AP");
     return Status::FAIL;
   }
 
-  PN_FAIL(); // unreachable
+  PN_LOG_UNREACHABLE();
+  PN_FAIL();
 }
 
 void Wifi::eventHandlerWifi(
   void* /*arg*/,
   esp_event_base_t eventBase,
   std::int32_t     eventId,
-  void*            eventData) noexcept { // NOLINT
+  void*            /*eventData*/) noexcept { // NOLINT
   if (eventBase == WIFI_EVENT && eventId == WIFI_EVENT_STA_START) [[likely]] {
-    ESP_ERROR_CHECK(esp_wifi_connect());
+    ESP_ERROR_CHECK(esp_wifi_connect()); //NOLINT
+
   } else if (
     eventBase == WIFI_EVENT && eventId == WIFI_EVENT_STA_DISCONNECTED) {
     PN_LOG_WARN("Disconnected from AP, trying to reconnect...");
-    ESP_ERROR_CHECK(esp_wifi_connect());
+    ESP_ERROR_CHECK(esp_wifi_connect()); //NOLINT
 
     xEventGroupClearBits(s_wifiEventGroup, WIFI_CONNECTED_BIT);
     xEventGroupSetBits(s_wifiEventGroup, WIFI_FAIL_BIT);
@@ -166,7 +172,6 @@ esp_err_t Wifi::tcpCreateSocket(TcpSocket& out) noexcept {
   }
 
   PN_LOG_INFO("Socket created");
-
   return Status::SUCCESS;
 }
 
@@ -178,7 +183,6 @@ esp_err_t Wifi::tcpConnectServer(
   PN_ERR_CHECK(err);
 
   PN_LOG_INFO("Connected to %s:%d", SERVER_IP.data(), SERVER_PORT);
-
   return Status::SUCCESS;
 }
 
@@ -201,9 +205,8 @@ esp_err_t Wifi::tcpReceiveData(TcpSocket& sock) noexcept {
     }
 
     // Data received
-    PN_LOG_INFO("Received %d bytes", len);
     rxBuffer.at(static_cast<size_t>(len)) = '\0';
-    PN_LOG_INFO("Received command: %s", rxBuffer.data());
+    PN_LOG_INFO("Received command (size: %d): %s", len, rxBuffer.data());
 
     const auto command = Command{ rxBuffer.data() };
     command.registerCommand();

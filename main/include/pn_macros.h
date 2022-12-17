@@ -7,7 +7,7 @@
 
 namespace Status {
 inline constexpr esp_err_t SUCCESS = ESP_OK;
-inline constexpr esp_err_t FAIL    = BIT0;
+inline constexpr esp_err_t FAIL    = ESP_FAIL;
 } // namespace Status
 
 #define PN_VALIDATE_TAG()                                                      \

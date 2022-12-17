@@ -12,6 +12,10 @@ esp_err_t CommandMotor::execute() const noexcept {
   PN_UNIMPLEMENTED();
 }
 
+void CommandMotor::registerCommand() const noexcept {
+  Motors::getInstance().registerCommand(this);
+}
+
 Axis CommandMotor::parseAxis(std::string_view raw) noexcept {
   switch (std::tolower(raw.at(AXIS_SPECIFIER_POS))) {
   case 'x':
@@ -40,10 +44,6 @@ CommandMotor::Steps CommandMotor::parseSteps(std::string_view raw) noexcept {
   }
 
   return steps;
-}
-
-void CommandMotor::registerCommand() const noexcept {
-  Motors::getInstance().registerCommand(this);
 }
 
 [[nodiscard]] bool CommandMotor::validate(std::string_view raw) noexcept {

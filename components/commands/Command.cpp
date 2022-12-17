@@ -16,8 +16,10 @@ Command::Command(std::string_view rawCommand) noexcept:
   m_command{ [rawCommand] {
     if (isMotor(rawCommand)) {
       return UnionCommands{ CommandMotor{ rawCommand } };
+
     } else if (isLight(rawCommand)) {
       return UnionCommands{ CommandLight{ rawCommand } };
+
     } else [[unlikely]] {
       PN_LOG_INVALID_DATA("Invalid command: %s", rawCommand.data());
       return UnionCommands{ CommandInvalid{} };
