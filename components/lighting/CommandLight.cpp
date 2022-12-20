@@ -83,9 +83,11 @@ bool CommandLight::validate(std::string_view raw) noexcept {
     return false;
   }
 
-  if (!std::ranges::all_of(raw.substr(RGBA_SPECIFIER_POS), [](const auto chr) {
-        return std::isxdigit(chr) || chr == '\0' || chr == '\n' || chr == '\r';
-      })) [[unlikely]] {
+  if (!std::ranges::all_of(
+        raw.substr(RGBA_SPECIFIER_POS), [](const auto chr) noexcept {
+          return std::isxdigit(chr) || chr == '\0' || chr == '\n' ||
+                 chr == '\r';
+        })) [[unlikely]] {
     PN_LOG_WARN("Color contains non-hex characters");
     return false;
   }

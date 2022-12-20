@@ -51,11 +51,11 @@ public:
     m_steps{ STEPS_INVALID } {
   }
 
-  CommandMotor(const CommandMotor& other)            = default;
-  CommandMotor(CommandMotor&& other)                 = default;
-  CommandMotor& operator=(const CommandMotor& other) = default;
-  CommandMotor& operator=(CommandMotor&& other)      = default;
-  ~CommandMotor() noexcept                           = default;
+  CommandMotor(const CommandMotor& other) noexcept            = default;
+  CommandMotor(CommandMotor&& other) noexcept                 = default;
+  CommandMotor& operator=(const CommandMotor& other) noexcept = default;
+  CommandMotor& operator=(CommandMotor&& other) noexcept      = default;
+  ~CommandMotor() noexcept                                    = default;
 
   esp_err_t execute() const noexcept; // NOLINT
   void      registerCommand() const noexcept;

@@ -40,18 +40,19 @@ public:
   constexpr Command() noexcept: m_command{ CommandInvalid{} } {
   }
 
-  Command(const Command& other)            = default;
-  Command(Command&& other)                 = default;
-  Command& operator=(const Command& other) = default;
-  Command& operator=(Command&& other)      = default;
-  ~Command() noexcept                      = default;
+  Command(const Command& other) noexcept            = default;
+  Command(Command&& other) noexcept                 = default;
+  Command& operator=(const Command& other) noexcept = default;
+  Command& operator=(Command&& other) noexcept      = default;
+  ~Command() noexcept                               = default;
 
   inline void execute() const noexcept {
-    std::visit([](auto&& command) { command.execute(); }, m_command);
+    std::visit([](auto&& command) noexcept { command.execute(); }, m_command);
   }
 
   inline void registerCommand() const noexcept {
-    std::visit([](auto&& command) { command.registerCommand(); }, m_command);
+    std::visit(
+      [](auto&& command) noexcept { command.registerCommand(); }, m_command);
   }
 
   [[nodiscard]] inline bool holdsMotorCommand() const noexcept {

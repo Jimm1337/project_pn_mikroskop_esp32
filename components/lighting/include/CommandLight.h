@@ -54,11 +54,11 @@ public:
     m_rgba{ INVALID_COLOR } {
   }
 
-  CommandLight(const CommandLight& other)            = default;
-  CommandLight(CommandLight&& other)                 = default;
-  CommandLight& operator=(const CommandLight& other) = default;
-  CommandLight& operator=(CommandLight&& other)      = default;
-  ~CommandLight() noexcept                           = default;
+  CommandLight(const CommandLight& other) noexcept            = default;
+  CommandLight(CommandLight&& other) noexcept                 = default;
+  CommandLight& operator=(const CommandLight& other) noexcept = default;
+  CommandLight& operator=(CommandLight&& other) noexcept      = default;
+  ~CommandLight() noexcept                                    = default;
 
   esp_err_t execute() const noexcept; // NOLINT
   void      registerCommand() const noexcept;

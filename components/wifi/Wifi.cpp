@@ -18,8 +18,8 @@
  */
 void Wifi::startTask() noexcept {
   xTaskCreate(
-    [](void*) {
-    Wifi wifi{};
+    [](void*) noexcept {
+    const Wifi wifi{};
     wifi.connect();
     while (true) {
       wifi.startReceiving();
@@ -33,21 +33,12 @@ void Wifi::startTask() noexcept {
     nullptr);
 }
 
-Wifi::Wifi() noexcept:
-  m_wifiConfig{ [] {
-    wifi_config_t cfg{};
-    std::memcpy(cfg.sta.ssid, SSID.data(), SSID.size());             // NOLINT
-    std::memcpy(cfg.sta.password, PASSWORD.data(), PASSWORD.size()); // NOLINT
-    cfg.sta.threshold.authmode = AUTH_MODE;
-    cfg.sta.pmf_cfg.capable    = true;
-    cfg.sta.pmf_cfg.required   = false;
-    return cfg;
-  }() } {
-  ESP_ERROR_CHECK(esp_netif_init()); //NOLINT
+Wifi::Wifi() noexcept {
+  ESP_ERROR_CHECK(esp_netif_init()); // NOLINT
   esp_netif_create_default_wifi_sta();
 
   const wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK(esp_wifi_init(&config)); //NOLINT
+  ESP_ERROR_CHECK(esp_wifi_init(&config)); // NOLINT
 
   s_wifiEventGroup = xEventGroupCreate();
 }
@@ -58,16 +49,16 @@ void Wifi::connect() noexcept {
     return;
   }
 
-  ESP_ERROR_CHECK(connectRegisterHandlers()); //NOLINT
-  ESP_ERROR_CHECK(connectSetup()); //NOLINT
-  ESP_ERROR_CHECK(connectWaitForConnection()); //NOLINT
+  ESP_ERROR_CHECK(connectRegisterHandlers());  // NOLINT
+  ESP_ERROR_CHECK(connectSetup());             // NOLINT
+  ESP_ERROR_CHECK(connectWaitForConnection()); // NOLINT
 
   vEventGroupDelete(s_wifiEventGroup);
   s_wifiEventGroup = nullptr;
 }
 
 void Wifi::startReceiving() noexcept {
-  const sockaddr_in destAddr = [] {
+  const sockaddr_in destAddr = []() noexcept {
     sockaddr_in addr{};
     addr.sin_addr.s_addr = inet_addr(SERVER_IP.data());
     addr.sin_family      = AF_INET;
@@ -76,13 +67,13 @@ void Wifi::startReceiving() noexcept {
   }();
 
   TcpSocket socket{};
-  ESP_ERROR_CHECK(tcpCreateSocket(socket)); //NOLINT
-  ESP_ERROR_CHECK(tcpConnectServer(socket, &destAddr)); //NOLINT
-  ESP_ERROR_CHECK(tcpReceiveData(socket)); // inf loop //NOLINT
+  ESP_ERROR_CHECK(tcpCreateSocket(socket));             // NOLINT
+  ESP_ERROR_CHECK(tcpConnectServer(socket, &destAddr)); // NOLINT
+  ESP_ERROR_CHECK(tcpReceiveData(socket));              // inf loop //NOLINT
 }
 
 esp_err_t Wifi::connectRegisterHandlers() noexcept {
-  esp_err_t err;
+  esp_err_t err; // NOLINT
 
   err = esp_event_handler_instance_register(
     WIFI_EVENT, ESP_EVENT_ANY_ID, &Wifi::eventHandlerWifi, nullptr, nullptr);
@@ -96,12 +87,12 @@ esp_err_t Wifi::connectRegisterHandlers() noexcept {
 }
 
 esp_err_t Wifi::connectSetup() noexcept {
-  esp_err_t err;
+  esp_err_t err; // NOLINT
 
   err = esp_wifi_set_mode(WIFI_MODE_STA);
   PN_ERR_CHECK(err);
 
-  err = esp_wifi_set_config(WIFI_IF_STA, &m_wifiConfig);
+  err = esp_wifi_set_config(WIFI_IF_STA, &s_wifiConfig);
   PN_ERR_CHECK(err);
 
   err = esp_wifi_start();
@@ -136,14 +127,14 @@ void Wifi::eventHandlerWifi(
   void* /*arg*/,
   esp_event_base_t eventBase,
   std::int32_t     eventId,
-  void*            /*eventData*/) noexcept { // NOLINT
+  void* /*eventData*/) noexcept { // NOLINT
   if (eventBase == WIFI_EVENT && eventId == WIFI_EVENT_STA_START) [[likely]] {
-    ESP_ERROR_CHECK(esp_wifi_connect()); //NOLINT
+    ESP_ERROR_CHECK(esp_wifi_connect()); // NOLINT
 
   } else if (
     eventBase == WIFI_EVENT && eventId == WIFI_EVENT_STA_DISCONNECTED) {
     PN_LOG_WARN("Disconnected from AP, trying to reconnect...");
-    ESP_ERROR_CHECK(esp_wifi_connect()); //NOLINT
+    ESP_ERROR_CHECK(esp_wifi_connect()); // NOLINT
 
     xEventGroupClearBits(s_wifiEventGroup, WIFI_CONNECTED_BIT);
     xEventGroupSetBits(s_wifiEventGroup, WIFI_FAIL_BIT);

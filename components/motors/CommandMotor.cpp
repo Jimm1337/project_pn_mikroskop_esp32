@@ -69,7 +69,7 @@ CommandMotor::Steps CommandMotor::parseSteps(std::string_view raw) noexcept {
   }
 
   if (!std::ranges::all_of(
-        raw.substr(STEPS_SPECIFIER_POS + 1), [](const auto chr) {
+        raw.substr(STEPS_SPECIFIER_POS + 1), [](const auto chr) noexcept {
           return std::isdigit(chr) || chr == '\0' || chr == '\n' || chr == '\r';
         })) [[unlikely]] {
     PN_LOG_WARN("Steps contain non-digit characters");

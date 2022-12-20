@@ -23,7 +23,7 @@ void Motors::startTask() noexcept {
   initMutex();
 
   xTaskCreate(
-    [](void* param) noexcept { getInstance().taskX(param); },
+    [](void*) noexcept { getInstance().taskX(); },
     "MotorsX",
     STACK_DEPTH,
     nullptr,
@@ -31,7 +31,7 @@ void Motors::startTask() noexcept {
     nullptr);
 
   xTaskCreate(
-    [](void* param) noexcept { getInstance().taskY(param); },
+    [](void*) noexcept { getInstance().taskY(); },
     "MotorsY",
     STACK_DEPTH,
     nullptr,
@@ -39,7 +39,7 @@ void Motors::startTask() noexcept {
     nullptr);
 
   xTaskCreate(
-    [](void* param) noexcept { getInstance().taskZ(param); },
+    [](void*) noexcept { getInstance().taskZ(); },
     "MotorsZ",
     STACK_DEPTH,
     nullptr,
@@ -49,7 +49,7 @@ void Motors::startTask() noexcept {
   PN_LOG_INFO("Started Motors tasks");
 }
 
-[[noreturn]] void Motors::taskX(void* /*pvParameters*/) noexcept {
+[[noreturn]] void Motors::taskX() noexcept {
   while (true) {
     if (m_commandQueueX.isEmpty()) {
       vTaskDelay(1);
@@ -61,7 +61,7 @@ void Motors::startTask() noexcept {
   }
 }
 
-[[noreturn]] void Motors::taskY(void* /*pvParameters*/) noexcept {
+[[noreturn]] void Motors::taskY() noexcept {
   while (true) {
     if (m_commandQueueY.isEmpty()) {
       vTaskDelay(1);
@@ -73,7 +73,7 @@ void Motors::startTask() noexcept {
   }
 }
 
-[[noreturn]] void Motors::taskZ(void* /*pvParameters*/) noexcept {
+[[noreturn]] void Motors::taskZ() noexcept {
   while (true) {
     if (m_commandQueueZ.isEmpty()) {
       vTaskDelay(1);

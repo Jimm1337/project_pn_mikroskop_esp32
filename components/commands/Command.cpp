@@ -13,7 +13,7 @@ void Command::CommandInvalid::registerCommand() noexcept {
 }
 
 Command::Command(std::string_view rawCommand) noexcept:
-  m_command{ [rawCommand] {
+  m_command{ [rawCommand]() noexcept {
     if (isMotor(rawCommand)) {
       return UnionCommands{ CommandMotor{ rawCommand } };
 

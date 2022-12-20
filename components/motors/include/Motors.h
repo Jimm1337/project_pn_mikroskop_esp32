@@ -26,11 +26,11 @@ private:
   CommandQueue<CommandMotor> m_commandQueueZ;
 
 public:
-  Motors(const Motors& other)            = delete;
-  Motors(Motors&& other)                 = default;
-  Motors& operator=(const Motors& other) = delete;
-  Motors& operator=(Motors&& other)      = default;
-  ~Motors() noexcept                     = default;
+  Motors(const Motors& other)                = delete;
+  Motors(Motors&& other) noexcept            = default;
+  Motors& operator=(const Motors& other)     = delete;
+  Motors& operator=(Motors&& other) noexcept = default;
+  ~Motors() noexcept                         = default;
 
   void        registerCommand(const CommandMotor* command) noexcept;
   static void startTask() noexcept;
@@ -48,9 +48,9 @@ public:
 private:
   Motors() noexcept = default;
 
-  [[noreturn]] void taskX(void*) noexcept;
-  [[noreturn]] void taskY(void*) noexcept;
-  [[noreturn]] void taskZ(void*) noexcept;
+  [[noreturn]] void taskX() noexcept;
+  [[noreturn]] void taskY() noexcept;
+  [[noreturn]] void taskZ() noexcept;
 
   static inline void initMutex() noexcept {
     s_semaphore = xSemaphoreCreateMutexStatic(&s_semaphoreBuffer);
