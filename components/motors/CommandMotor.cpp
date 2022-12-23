@@ -3,13 +3,14 @@
 #include "pn_logger.h"
 #include "pn_macros.h"
 #include "Motors.h"
+#include "Stepper.h"
 
-esp_err_t CommandMotor::execute() const noexcept {
+esp_err_t CommandMotor::execute(Stepper& motor) const noexcept {
   PN_LOG_INFO(
     "Motor command: %u, %d", static_cast<std::uint8_t>(m_axis), m_steps);
 
-  // todo: implement motor command execution
-  PN_UNIMPLEMENTED();
+  motor.step(m_steps);
+  return Status::SUCCESS;
 }
 
 void CommandMotor::registerCommand() const noexcept {

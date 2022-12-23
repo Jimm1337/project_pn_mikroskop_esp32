@@ -6,6 +6,7 @@
 #include <string_view>
 #include "esp_log.h"
 #include "pn_logger.h"
+#include "Stepper.h"
 
 enum class Axis : std::int_fast8_t {
   X,
@@ -57,7 +58,7 @@ public:
   CommandMotor& operator=(CommandMotor&& other) noexcept      = default;
   ~CommandMotor() noexcept                                    = default;
 
-  esp_err_t execute() const noexcept; // NOLINT
+  esp_err_t execute(Stepper& motor) const noexcept; // NOLINT
   void      registerCommand() const noexcept;
 
   [[nodiscard]] inline Axis getAxis() const noexcept {

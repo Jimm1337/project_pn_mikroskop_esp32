@@ -1,5 +1,22 @@
 #include "Motors.h"
 
+Motors::Motors() noexcept:
+  m_stepperX{ STEPPER_X_PINS.at(0),
+              STEPPER_X_PINS.at(1),
+              STEPPER_X_PINS.at(2),
+              STEPPER_X_PINS.at(3) },
+  m_stepperY{ STEPPER_X_PINS.at(0),
+              STEPPER_X_PINS.at(1),
+              STEPPER_X_PINS.at(2),
+              STEPPER_X_PINS.at(3) },
+  m_stepperZ{ STEPPER_Z_PINS.at(0),
+              STEPPER_Z_PINS.at(1),
+              STEPPER_Z_PINS.at(2),
+              STEPPER_Z_PINS.at(3) } {
+  PN_LOG_DEBUG("Created Motors");
+}
+
+
 void Motors::registerCommand(const CommandMotor* command) noexcept {
   switch (command->getAxis()) {
   case Axis::X:
@@ -14,7 +31,7 @@ void Motors::registerCommand(const CommandMotor* command) noexcept {
     m_commandQueueZ.push(command);
     break;
 
-  [[unlikely]] default:
+  default: [[unlikely]]
     break;
   }
 }
@@ -57,7 +74,7 @@ void Motors::startTask() noexcept {
     }
 
     auto command = m_commandQueueX.pop();
-    command.execute();
+    command.execute(m_stepperX);
   }
 }
 
@@ -69,7 +86,7 @@ void Motors::startTask() noexcept {
     }
 
     auto command = m_commandQueueY.pop();
-    command.execute();
+    command.execute(m_stepperY);
   }
 }
 
@@ -81,6 +98,6 @@ void Motors::startTask() noexcept {
     }
 
     auto command = m_commandQueueZ.pop();
-    command.execute();
+    command.execute(m_stepperZ);
   }
 }

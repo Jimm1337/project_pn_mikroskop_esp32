@@ -9,7 +9,6 @@
 
 template<typename T>
 concept validCMD = requires(T cmd) {
-                     { cmd.execute() } -> std::same_as<esp_err_t>;
                      { cmd.registerCommand() } -> std::same_as<void>;
                    };
 

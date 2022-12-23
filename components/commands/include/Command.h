@@ -46,10 +46,6 @@ public:
   Command& operator=(Command&& other) noexcept      = default;
   ~Command() noexcept                               = default;
 
-  inline void execute() const noexcept {
-    std::visit([](auto&& command) noexcept { command.execute(); }, m_command);
-  }
-
   inline void registerCommand() const noexcept {
     std::visit(
       [](auto&& command) noexcept { command.registerCommand(); }, m_command);

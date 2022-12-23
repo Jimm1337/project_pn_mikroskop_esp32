@@ -21,7 +21,7 @@ inline constexpr esp_err_t FAIL    = ESP_FAIL;
 
 #define PN_ERR_CHECK(err)                                                      \
   do {                                                                         \
-    if ((err) != Status::SUCCESS) {                                            \
+    if ((err) != Status::SUCCESS) [[unlikely]] {                               \
       PN_LOG_ERROR("Error");                                                   \
       return Status::FAIL;                                                     \
     }                                                                          \

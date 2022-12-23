@@ -9,12 +9,22 @@
 #include "freertos/semphr.h"
 #include "pn_logger.h"
 #include <memory>
+#include "Stepper.h"
 
 class Motors final {
   static constexpr std::string_view LOG_TAG{ "Motors" };
 
-  static constexpr auto STACK_DEPTH   = 4096;
-  static constexpr auto TASK_PRIORITY = 1;
+  static constexpr auto                      STACK_DEPTH    = 4096;
+  static constexpr auto                      TASK_PRIORITY  = 1;
+  static constexpr std::array<gpio_num_t, 4> STEPPER_X_PINS = {
+    GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33 // D34, D35, D32, D33
+  };
+  static constexpr std::array<gpio_num_t, 4> STEPPER_Y_PINS = {
+    GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12 // D26, D27, D14, D12
+  };
+  static constexpr std::array<gpio_num_t, 4> STEPPER_Z_PINS = {
+    GPIO_NUM_21, GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5 // D21, D19, D18, D5
+  };
 
 private:
   static inline std::unique_ptr<Motors> s_instance{ nullptr };
@@ -24,6 +34,10 @@ private:
   CommandQueue<CommandMotor> m_commandQueueX;
   CommandQueue<CommandMotor> m_commandQueueY;
   CommandQueue<CommandMotor> m_commandQueueZ;
+
+  Stepper m_stepperX;
+  Stepper m_stepperY;
+  Stepper m_stepperZ;
 
 public:
   Motors(const Motors& other)                = delete;
@@ -46,7 +60,7 @@ public:
   }
 
 private:
-  Motors() noexcept = default;
+  Motors() noexcept;
 
   [[noreturn]] void taskX() noexcept;
   [[noreturn]] void taskY() noexcept;
